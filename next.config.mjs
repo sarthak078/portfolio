@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // important for static HTML export
-  // Optional: basePath if deploying to a subpath
-  // basePath: '/<repo-name>',
-};
-
-export default nextConfig;
+  output: "export",
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || "",
+}
+export default nextConfig
