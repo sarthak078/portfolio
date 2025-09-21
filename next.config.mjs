@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  basePath: "/portfolio",       // your repo name
-  assetPrefix: "/portfolio/",   // ensures CSS/JS assets load
+  trailingSlash: true,
+  images: {
+    unoptimized: true
+  },
+  // Remove basePath and assetPrefix when using custom domain
 };
 
 export default nextConfig;
