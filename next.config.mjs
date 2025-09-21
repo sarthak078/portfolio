@@ -4,8 +4,10 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true
-  },
-  // Remove basePath and assetPrefix when using custom domain
+  }
+  // COMPLETELY REMOVE these lines:
+  // basePath: "/portfolio",
+  // assetPrefix: "/portfolio/",
 };
 
 export default nextConfig;
