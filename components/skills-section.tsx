@@ -1,161 +1,261 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Code, Database, Brain, BarChart3 } from "lucide-react"
-
+import { motion, AnimatePresence } from "framer-motion"
+import { Brain, Cloud, Code2, Database, ShieldCheck, Sparkles } from "lucide-react"
+import { SectionHeading } from "@/components/motion/section-heading"
+import { fadeInUp } from "@/lib/motion"
+import { cn } from "@/lib/utils"
 
 const skillCategories = [
   {
-    id: "programming",
-    title: "Programming Languages",
-    icon: Code,
-    color: "text-chart-1",
+    id: "genai",
+    file: "genai.py",
+    title: "Generative AI & MLOps",
+    icon: Sparkles,
     skills: [
-      { name: "Python", description: "Advanced proficiency with data science, ML, and automation libraries" },
-      { name: "R", description: "Strong foundation in statistical modeling and visualization" },
-      { name: "SQL", description: "Expertise in complex queries, optimization, and database management" },
-      { name: "Bash Scripting", description: "Automating workflows and system administration tasks" },
+      { name: "Amazon Bedrock", description: "Foundation models, Nova Vision and serverless GenAI apps on AWS" },
+      { name: "LangChain", description: "Chains, tools and retrieval for LLM applications" },
+      { name: "CrewAI", description: "Role-based multi-agent systems for end-to-end automation" },
+      { name: "AutoGen", description: "Conversational orchestration of collaborating agents" },
+      { name: "RAG Pipelines", description: "Grounding LLM output in retrieved, current sources" },
+      { name: "Vector Databases", description: "Embedding storage and semantic search (e.g. Pinecone)" },
+      { name: "Prompt Engineering", description: "Template design with automated evaluation of output quality" },
+      { name: "Fine-tuning", description: "Adapting pretrained models to domain-specific tasks" },
     ],
   },
   {
     id: "ml",
-    title: "Artificial Intelligenc(Gen AI & Agentic AI)  & Machine Learning",
+    file: "models.ipynb",
+    title: "AI & Machine Learning",
     icon: Brain,
-    color: "text-chart-2",
     skills: [
-      { name: "Scikit-learn", description: "Implementation of classical ML algorithms and pipelines" },
-      { name: "TensorFlow", description: "Building and deploying deep learning models" },
-      { name: "PyTorch", description: "Research and experimentation with neural networks" },
-      { name: "XGBoost", description: "High-performance gradient boosting for structured data" },
-      { name: "Keras", description: "Rapid prototyping with a high-level deep learning API" },
-      { name: "AWS Bedrock", description: "Developing and deploying foundation models on AWS" },
-      { name: "Crew AI", description: "Orchestrating collaborative AI agents for tasks and workflows" },
-      { name: "Auto Gen", description: "Framework for building autonomous, multi-agent AI systems" },
+      { name: "PyTorch", description: "Custom architectures such as CNNs on log-mel spectrograms" },
+      { name: "TensorFlow / Keras", description: "Building, training and deploying deep learning models" },
+      { name: "Scikit-learn", description: "Classical ML algorithms, pipelines and model evaluation" },
+      { name: "CNNs", description: "Image and audio classification for medical and speech data" },
+      { name: "NLP", description: "Text classification, summarization and sentiment analysis" },
+      { name: "Hugging Face", description: "Transformer models for summarization, detection and sentiment" },
+    ],
+  },
+  {
+    id: "data",
+    file: "pipeline.sql",
+    title: "Data, Big Data & Databases",
+    icon: Database,
+    skills: [
+      { name: "Apache Spark (PySpark)", description: "Distributed processing of large-scale datasets" },
+      { name: "Hadoop (HDFS)", description: "Distributed storage for big data workloads" },
+      { name: "Pandas / NumPy", description: "Data wrangling, feature engineering and analysis" },
+      { name: "PostgreSQL", description: "Relational modeling, query tuning and indexing" },
+      { name: "MongoDB", description: "Document data modeling for flexible schemas" },
+      { name: "DynamoDB", description: "Serverless key-value storage for AWS applications" },
+      { name: "Supabase", description: "Postgres backend with auth and real-time subscriptions" },
+      { name: "Matplotlib / Plotly / Tableau", description: "Static, interactive and BI visualizations" },
     ],
   },
   {
     id: "cloud",
-    title: "Cloud Computing and DevOps",
-    icon: Database,
-    color: "text-chart-3",
+    file: "infra.tf",
+    title: "Cloud & Infrastructure",
+    icon: Cloud,
     skills: [
-      { name: "AWS", description: "Cloud infrastructure, storage, compute, and ML services" },
-      { name: "Azure DevOps", description: "CI/CD pipelines, project tracking, and release automation" },
-      { name: "Terraform", description: "Infrastructure as Code for multi-cloud environments" },
-      { name: "Docker", description: "Containerization and portable application deployment" },
-      { name: "Kubernetes", description: "Orchestration of containerized applications at scale" },
-      { name: "Jenkins", description: "Automated CI/CD pipelines for software delivery" },
-      { name: "Pantheon", description: "Cloud-based platform for web hosting and DevOps workflows" },
+      { name: "AWS", description: "Lambda, EKS, EC2, S3, API Gateway, SageMaker, CloudWatch, IAM, VPC" },
+      { name: "Microsoft Azure", description: "AKS and Azure DevOps across multi-cloud environments" },
+      { name: "Terraform", description: "Infrastructure as Code: provisioning cut from hours to minutes" },
+      { name: "Kubernetes", description: "EKS/AKS orchestration for production microservices" },
+      { name: "Docker", description: "Containerization for environment parity across stages" },
     ],
   },
   {
-    id: "visualization",
-    title: "Data Visualization",
-    icon: BarChart3,
-    color: "text-chart-4",
+    id: "devops",
+    file: "ci.yaml",
+    title: "DevOps, Observability & Security",
+    icon: ShieldCheck,
     skills: [
-      { name: "Matplotlib", description: "Creating static, publication-quality charts and plots" },
-      { name: "Seaborn", description: "High-level statistical visualizations built on Matplotlib" },
-      { name: "Plotly", description: "Interactive dashboards and web-based data visualizations" },
-      { name: "Tableau", description: "Business intelligence dashboards and reporting" },
+      { name: "Jenkins", description: "Multi-team CI/CD pipelines for build, test and deploy" },
+      { name: "GitHub Actions", description: "Automated workflows and CI/CD from the repository" },
+      { name: "Grafana / Prometheus", description: "Metrics, dashboards and alerting" },
+      { name: "Splunk", description: "Centralized logging, SIEM and incident investigation" },
+      { name: "Cloud Security", description: "IAM least privilege, VPC design and compliance audits" },
+      { name: "Jira / Git", description: "Agile delivery and version control" },
     ],
   },
   {
-    id: "sre-security",
-    title: "SRE & Cybersecurity",
-    icon: Code, // You can swap with Shield icon if preferred
-    color: "text-chart-5",
+    id: "languages",
+    file: "languages.sh",
+    title: "Languages",
+    icon: Code2,
     skills: [
-      { name: "Prometheus", description: "Monitoring, alerting, and metrics collection for systems" },
-      { name: "Grafana", description: "Real-time visualization of system metrics and performance" },
-      { name: "ELK Stack", description: "Centralized logging, search, and analytics (Elasticsearch, Logstash, Kibana)" },
-      { name: "Kubernetes Security", description: "RBAC, secrets management, and cluster hardening" },
-      { name: "AWS Security", description: "IAM, KMS, and securing workloads in AWS" },
-      { name: "Vulnerability Assessment", description: "Identifying and remediating security risks" },
-      { name: "Incident Response", description: "Managing and mitigating security breaches and outages" },
+      { name: "Python", description: "Primary language for ML, data and automation" },
+      { name: "SQL", description: "Complex queries, optimization and schema design" },
+      { name: "TypeScript / JavaScript", description: "Next.js and React front ends" },
+      { name: "Bash", description: "Automation and system scripting" },
+      { name: "YAML", description: "Pipelines, configuration and infrastructure definitions" },
+      { name: "R", description: "Statistical modeling and visualization" },
     ],
   },
 ]
 
-export function SkillsSection() {
-  const [activeCategory, setActiveCategory] = useState("programming")
+const allSkills = skillCategories.flatMap((c) => c.skills.map((s) => s.name))
+const half = Math.ceil(allSkills.length / 2)
 
-  const activeSkills = skillCategories.find((cat) => cat.id === activeCategory)?.skills || []
+function Marquee({ items, reverse = false }: { items: string[]; reverse?: boolean }) {
+  return (
+    <div className="group/marquee mask-fade-x flex overflow-hidden">
+      <div
+        className={cn("flex w-max shrink-0 gap-3 pr-3", reverse ? "animate-marquee-reverse" : "animate-marquee")}
+        style={{ ["--duration" as string]: "50s" }}
+      >
+        {[...items, ...items].map((item, i) => (
+          <span
+            key={i}
+            aria-hidden={i >= items.length}
+            className="whitespace-nowrap rounded-lg border border-border bg-card/50 px-4 py-2 font-mono text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function SkillsSection() {
+  const [activeId, setActiveId] = useState(skillCategories[0].id)
+  const active = skillCategories.find((cat) => cat.id === activeId) ?? skillCategories[0]
 
   return (
-    <section id="skills" className="py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-            Technical <span className="text-primary">Skills</span>
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-            Comprehensive expertise across the data science pipeline, from data collection and processing to machine
-            learning and visualization.
-          </p>
-        </div>
+    <section id="skills" className="relative py-28 md:py-36">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeading
+          index="02"
+          label="tech stack"
+          title="The tools behind"
+          highlight="the work."
+          description="Across the full pipeline: data wrangling, modelling, agent orchestration, and the infrastructure, observability and security it all runs on."
+        />
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Category Selector */}
-          <div className="lg:col-span-1">
-            <div className="space-y-2">
-              {skillCategories.map((category) => {
-                const Icon = category.icon
-                return (
-                  <Card
-                    key={category.id}
-                    className={`cursor-pointer transition-all duration-300 ${
-                      activeCategory === category.id ? "border-primary bg-primary/5" : "hover:border-primary/50"
-                    }`}
-                    onClick={() => setActiveCategory(category.id)}
-                  >
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-3 text-lg">
-                        <Icon className={`w-5 h-5 ${category.color}`} />
-                        {category.title}
-                      </CardTitle>
-                    </CardHeader>
-                  </Card>
-                )
-              })}
+      <div className="mb-14 space-y-3">
+        <Marquee items={allSkills.slice(0, half)} />
+        <Marquee items={allSkills.slice(half)} reverse />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={fadeInUp}
+          className="overflow-hidden rounded-xl border border-border bg-card/60 shadow-2xl shadow-black/5 backdrop-blur-sm dark:shadow-black/30"
+        >
+          <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-border" />
+            <span className="h-2.5 w-2.5 rounded-full bg-border" />
+            <span className="h-2.5 w-2.5 rounded-full bg-border" />
+            <span className="ml-3 font-mono text-xs text-muted-foreground">~/stack/{active.file}</span>
+          </div>
+
+          <div className="flex overflow-x-auto border-b border-border" role="tablist">
+            {skillCategories.map((cat) => {
+              const Icon = cat.icon
+              const isActive = cat.id === activeId
+              return (
+                <button
+                  key={cat.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveId(cat.id)}
+                  className={cn(
+                    "relative flex shrink-0 items-center gap-2 border-r border-border px-4 py-3 font-mono text-xs transition-colors",
+                    isActive ? "bg-card text-foreground" : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                  )}
+                >
+                  <Icon className={cn("h-3.5 w-3.5", isActive && "text-primary")} />
+                  {cat.file}
+                  {isActive && (
+                    <motion.span layoutId="skill-tab" className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary to-secondary" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="grid lg:grid-cols-[1fr_280px]">
+            <div className="min-h-[420px] py-4 font-mono text-[13px] leading-7">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <CodeLine n={1}>
+                    <span className="text-muted-foreground"># {active.title}</span>
+                  </CodeLine>
+                  <CodeLine n={2}>
+                    <span className="text-secondary">stack</span> <span className="text-muted-foreground">=</span> {"{"}
+                  </CodeLine>
+                  {active.skills.map((skill, i) => (
+                    <motion.div
+                      key={skill.name}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                    >
+                      <CodeLine n={i + 3} hover>
+                        <span className="pl-6 text-primary">&quot;{skill.name}&quot;</span>
+                        <span className="text-muted-foreground">: </span>
+                        <span className="text-foreground/70">&quot;{skill.description}&quot;</span>
+                        <span className="text-muted-foreground">,</span>
+                      </CodeLine>
+                    </motion.div>
+                  ))}
+                  <CodeLine n={active.skills.length + 3}>{"}"}</CodeLine>
+                  <CodeLine n={active.skills.length + 4}>
+                    <span className="caret" aria-hidden />
+                  </CodeLine>
+                </motion.div>
+              </AnimatePresence>
             </div>
-          </div>
 
-          {/* Skills Display */}
-          <div className="lg:col-span-2">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  {(() => {
-                    const activeCategory_obj = skillCategories.find((cat) => cat.id === activeCategory)
-                    const Icon = activeCategory_obj?.icon || Code
-                    return (
-                      <>
-                        <Icon className={`w-6 h-6 ${activeCategory_obj?.color}`} />
-                        {activeCategory_obj?.title}
-                      </>
-                    )
-                  })()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {activeSkills.map((skill) => (
-                  <div key={skill.name} className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="secondary" className="font-medium">
-                        {skill.name}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{skill.description}</p>
-                  </div>
+            <aside className="hidden border-l border-border p-6 lg:block">
+              <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">// explorer</div>
+              <ul className="space-y-1">
+                {skillCategories.map((cat) => (
+                  <li key={cat.id}>
+                    <button
+                      onClick={() => setActiveId(cat.id)}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                        cat.id === activeId ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <span className="truncate">{cat.title}</span>
+                      <span className="ml-2 font-mono text-xs opacity-60">{cat.skills.length}</span>
+                    </button>
+                  </li>
                 ))}
-              </CardContent>
-            </Card>
+              </ul>
+              <div className="mt-8 rounded-lg border border-border bg-muted/40 p-4">
+                <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">total tools</div>
+                <div className="mt-1 text-3xl font-semibold text-gradient">{allSkills.length}</div>
+              </div>
+            </aside>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
+  )
+}
+
+function CodeLine({ n, children, hover = false }: { n: number; children: React.ReactNode; hover?: boolean }) {
+  return (
+    <div className={cn("flex px-2", hover && "transition-colors hover:bg-primary/5")}>
+      <span className="w-10 shrink-0 select-none pr-4 text-right text-muted-foreground/50">{n}</span>
+      <span className="min-w-0 flex-1 break-words">{children}</span>
+    </div>
   )
 }

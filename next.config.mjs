@@ -1,13 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
+  ...(process.env.STATIC_EXPORT === "true" ? { output: "export" } : {}),
   trailingSlash: true,
   images: {
-    unoptimized: true
-  }
-  // COMPLETELY REMOVE these lines:
-  // basePath: "/portfolio",
-  // assetPrefix: "/portfolio/",
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;

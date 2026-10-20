@@ -1,126 +1,136 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Menu, X, Download } from "lucide-react"
+import { useEffect, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Command, Menu, X } from "lucide-react"
+import { useActiveSection } from "@/hooks/use-active-section"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { useHydrated } from "@/hooks/use-hydrated"
+import { profile, sections, scrollToSection } from "@/lib/profile"
+import { cn } from "@/lib/utils"
+
+const openPalette = () => window.dispatchEvent(new Event("open-command-palette"))
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const activeSection = useActiveSection()
+  const hydrated = useHydrated()
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-    window.addEventListener("scroll", handleScroll)
+    const handleScroll = () => setIsScrolled(window.scrollY > 24)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-      setIsMobileMenuOpen(false)
-    }
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : ""
+  }, [isMobileMenuOpen])
+
+  const go = (id: string) => {
+    scrollToSection(id)
+    setIsMobileMenuOpen(false)
   }
 
   return (
-    <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border" : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="font-bold text-xl text-primary">Sarthak Pokhrel</div>
+    <>
+      <motion.nav
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4"
+      >
+        <div
+          className={cn(
+            "flex w-full max-w-5xl items-center justify-between rounded-2xl border px-3 py-2 transition-all duration-500",
+            isScrolled
+              ? "glass border-border/80 shadow-lg shadow-black/5 dark:shadow-black/30"
+              : "border-transparent bg-transparent",
+          )}
+        >
+          <button onClick={() => go("home")} className="group flex items-center gap-2.5 px-1" aria-label="Back to top">
+            <span className="relative grid h-8 w-8 place-items-center rounded-lg border border-primary/40 bg-primary/10 font-mono text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              SP
+            </span>
+            <span className="hidden font-mono text-sm sm:inline">
+              {profile.handle}
+              <span className="text-primary">.</span>
+              <span className="text-muted-foreground">pokhrel</span>
+            </span>
+          </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => scrollToSection("home")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => scrollToSection("projects")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Projects
-            </button>
-            <button
-              onClick={() => scrollToSection("skills")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Skills
-            </button>
-            <button
-              onClick={() => scrollToSection("experience")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Experience
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              About
-            </button>
-            <Button onClick={() => scrollToSection("contact")} className="bg-primary hover:bg-primary/90">
-              Contact 
-            </Button>
+          <div className="hidden items-center gap-1 md:flex">
+            {sections.map((item, i) => {
+              const isActive = activeSection === item.id
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => go(item.id)}
+                  className={cn(
+                    "relative rounded-lg px-3 py-1.5 font-mono text-[13px] transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {hydrated && isActive && (
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="absolute inset-0 -z-10 rounded-lg border border-primary/30 bg-primary/10"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <span className="mr-1 text-primary/70">0{i + 1}</span>
+                  {item.label.toLowerCase()}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={openPalette}
+              className="hidden h-9 items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 font-mono text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground sm:inline-flex"
+              aria-label="Open command palette"
+            >
+              <Command className="h-3.5 w-3.5" />K
+            </button>
+            <ThemeToggle />
+            <button
+              className="grid h-9 w-9 place-items-center rounded-lg md:hidden"
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+      </motion.nav>
 
-        {/* Mobile Navigation */}
+      <AnimatePresence>
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-background border-t border-border">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <button
-                onClick={() => scrollToSection("home")}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors w-full text-left"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="glass fixed inset-0 z-40 flex flex-col justify-center px-8 md:hidden"
+          >
+            <div className="bg-grid absolute inset-0 -z-10 opacity-60" />
+            {sections.map((item, i) => (
+              <motion.button
+                key={item.id}
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 + i * 0.05 }}
+                onClick={() => go(item.id)}
+                className="flex items-baseline gap-4 py-3 text-left text-4xl font-semibold tracking-tight"
               >
-                Home
-              </button>
-              <button
-                onClick={() => scrollToSection("projects")}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors w-full text-left"
-              >
-                Projects
-              </button>
-              <button
-                onClick={() => scrollToSection("skills")}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors w-full text-left"
-              >
-                Skills
-              </button>
-              <button
-                onClick={() => scrollToSection("experience")}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors w-full text-left"
-              >
-                Experience
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="block px-3 py-2 text-foreground hover:text-primary transition-colors w-full text-left"
-              >
-                About
-              </button>
-              <Button onClick={() => scrollToSection("contact")} className="w-full mt-2 bg-primary hover:bg-primary/90">
-                <Download className="w-4 h-4 mr-2" />
-                Resume
-              </Button>
-            </div>
-          </div>
+                <span className="font-mono text-sm text-primary">0{i + 1}</span>
+                <span className={activeSection === item.id ? "text-gradient" : ""}>{item.label}</span>
+              </motion.button>
+            ))}
+          </motion.div>
         )}
-      </div>
-    </nav>
+      </AnimatePresence>
+    </>
   )
 }
